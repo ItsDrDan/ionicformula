@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ionic Compound & Acid Nomenclature Study Tool</title>
+<title>Ionic, Covalent &amp; Acid Nomenclature Study Tool</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -408,6 +408,7 @@
   .math-editor-note{margin-top:5px; font-size:.72rem; line-height:1.35; color:#6b8a78;}
   .build-instruction{font-size:.82rem; color:#557263; line-height:1.45;}
   .quiz-actions{display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:12px;}
+  #quizPeriodicReferences{margin-top:12px;}
   .quiz-feedback{display:none; margin-top:12px; border-radius:8px; padding:9px 11px; font-size:.84rem; line-height:1.45;}
   .quiz-feedback.show{display:block;}
   .quiz-feedback.ok{background:#e4f5e9;color:#1f6b3a;}
@@ -539,9 +540,9 @@
 <body class="quiz-mode">
 
 <header>
-  <h1>⚗️ Ionic Compound & Acid Nomenclature</h1>
-  <p>Start in Study / Quiz Mode to practice ionic-compound formulas and names plus binary-acid and oxyacid nomenclature, or switch to Free Builder Mode to explore ionic compounds on your own.</p>
-  <button class="help-btn" id="helpToggle">What's Type I / Type II?</button>
+  <h1>⚗️ Ionic, Covalent &amp; Acid Nomenclature</h1>
+  <p>Start in Study / Quiz Mode to practice ionic compounds, binary covalent molecules, binary acids, and oxyacids — or switch to Free Builder Mode to explore ionic compounds on your own.</p>
+  <button class="help-btn" id="helpToggle">Naming Help</button>
 </header>
 
 <div class="help-panel" id="helpPanel">
@@ -553,6 +554,10 @@
     <div>
       <h3>Type II ionic compounds</h3>
       <p>The cation is a metal that can form <strong>more than one</strong> possible charge (many transition metals). A Roman numeral showing that specific charge is required in the name, e.g. <em>iron (III) oxide</em>.</p>
+    </div>
+    <div>
+      <h3>Binary covalent compounds</h3>
+      <p>Use Greek prefixes <strong>mono- through deca-</strong> to show the number of each atom. The first element keeps its normal name and <strong>does not use mono- when only one atom is present</strong>. The second element always uses a prefix and ends in <strong>-ide</strong>, e.g. <em>carbon monoxide</em> and <em>carbon dioxide</em>.</p>
     </div>
   </div>
 </div>
@@ -575,7 +580,7 @@
       <div class="quiz-top">
         <div>
           <h2>Study / Quiz Mode</h2>
-          <p>Practice ionic compounds plus binary acids and oxyacids. Ionic questions alternate between formula → name and name → build; acid questions use formula → name and name → formula.</p>
+          <p>Practice ionic compounds, binary covalent molecules, binary acids, and oxyacids. Formula → name and name → formula questions are mixed together; ionic compounds can also be built with the ion pieces.</p>
         </div>
         <div class="quiz-stats">
           <span class="stat-chip" id="scoreChip">Score: 0 / 0</span>
@@ -588,6 +593,7 @@
         <button class="practice-btn" type="button" data-practice="name">Formula → Name</button>
         <button class="practice-btn" type="button" data-practice="build">Name → Formula / Build</button>
         <button class="practice-btn" type="button" data-practice="acids">Acids Only</button>
+        <button class="practice-btn" type="button" data-practice="covalent">Covalent Only</button>
       </div>
 
       <div class="question-card">
@@ -597,6 +603,35 @@
 
         <div class="quiz-answer-area" id="quizNameArea">
           <input type="text" id="quizNameInput" autocomplete="off" placeholder="Type your answer">
+        </div>
+        <div class="quiz-answer-area" id="quizFormulaArea" style="display:none;">
+          <div class="quiz-formula-editor">
+            <span class="field-label">Formula editor</span>
+            <div class="formula-toolbar quiz-formula-toolbar">
+              <button class="tbtn active" id="quizSubToggle" type="button" title="Toggle automatic subscript formatting">X<sub>2</sub> Subscript</button>
+              <button class="tbtn" id="quizParenOpen" type="button">(</button>
+              <button class="tbtn" id="quizParenClose" type="button">)</button>
+              <button class="tbtn" id="quizFormulaClear" type="button">Clear</button>
+            </div>
+            <div id="quizFormulaInput" contenteditable="true" spellcheck="false" inputmode="text" data-placeholder="Type the formula, e.g. H₂SO₄"></div>
+            <div class="math-editor-note">Subscript mode starts ON. Type numbers normally and they will be formatted as subscripts. You can also paste a plain formula such as H2SO4.</div>
+          </div>
+        </div>
+        <div class="quiz-answer-area" id="quizBuildArea" style="display:none;">
+          <div class="build-instruction">Use the cation and anion banks below. Add the correct ions until the compound is represented in its lowest whole-number ratio.</div>
+        </div>
+
+        <div class="quiz-actions">
+          <button class="btn primary" id="quizCheckBtn" type="button">Check Answer</button>
+          <button class="btn" id="quizNextBtn" type="button">New Question</button>
+          <button class="btn ghost" id="quizHintBtn" type="button">Hint</button>
+          <button class="btn ghost" id="quizRevealBtn" type="button">Show Answer</button>
+        </div>
+
+        <div class="quiz-hint" id="quizHint"></div>
+        <div class="quiz-feedback" id="quizFeedback"></div>
+
+        <div id="quizPeriodicReferences">
           <details class="periodic-reference reference-only" id="namePeriodicReference" open>
             <summary>✨ Periodic Table Reference</summary>
             <div class="periodic-note">Use the periodic table as a reference while identifying the elements in the formula.</div>
@@ -613,19 +648,7 @@
               <span class="pt-key"><span class="pt-swatch pt-noble"></span>noble gas</span>
             </div>
           </details>
-        </div>
-        <div class="quiz-answer-area" id="quizFormulaArea" style="display:none;">
-          <div class="quiz-formula-editor">
-            <span class="field-label">Formula editor</span>
-            <div class="formula-toolbar quiz-formula-toolbar">
-              <button class="tbtn active" id="quizSubToggle" type="button" title="Toggle automatic subscript formatting">X<sub>2</sub> Subscript</button>
-              <button class="tbtn" id="quizParenOpen" type="button">(</button>
-              <button class="tbtn" id="quizParenClose" type="button">)</button>
-              <button class="tbtn" id="quizFormulaClear" type="button">Clear</button>
-            </div>
-            <div id="quizFormulaInput" contenteditable="true" spellcheck="false" inputmode="text" data-placeholder="Type the formula, e.g. H₂SO₄"></div>
-            <div class="math-editor-note">Subscript mode starts ON. Type numbers normally and they will be formatted as subscripts. You can also paste a plain formula such as H2SO4.</div>
-            <details class="periodic-reference" id="periodicReference" open>
+          <details class="periodic-reference" id="periodicReference" open>
               <summary>✨ Periodic Table Reference</summary>
               <div class="periodic-note">Use this as a symbol reference. You can also click an element to insert its symbol into the formula editor.</div>
               <div class="periodic-table-wrap">
@@ -641,21 +664,7 @@
                 <span class="pt-key"><span class="pt-swatch pt-noble"></span>noble gas</span>
               </div>
             </details>
-          </div>
         </div>
-        <div class="quiz-answer-area" id="quizBuildArea" style="display:none;">
-          <div class="build-instruction">Use the cation and anion banks below. Add the correct ions until the compound is represented in its lowest whole-number ratio.</div>
-        </div>
-
-        <div class="quiz-actions">
-          <button class="btn primary" id="quizCheckBtn" type="button">Check Answer</button>
-          <button class="btn" id="quizNextBtn" type="button">New Question</button>
-          <button class="btn ghost" id="quizHintBtn" type="button">Hint</button>
-          <button class="btn ghost" id="quizRevealBtn" type="button">Show Answer</button>
-        </div>
-
-        <div class="quiz-hint" id="quizHint"></div>
-        <div class="quiz-feedback" id="quizFeedback"></div>
       </div>
     </section>
 
@@ -732,7 +741,7 @@
   </div>
 </main>
 
-<footer>Ionic Compound & Acid Nomenclature · Study / Quiz + Free Builder Mode · intro chemistry digital toolkit</footer>
+<footer>Ionic, Covalent &amp; Acid Nomenclature · Study / Quiz + Free Builder Mode · intro chemistry digital toolkit</footer>
 
 <script>
 (function(){
@@ -965,6 +974,95 @@ function buildOxyacidPool(){
 }
 
 const ACIDS = [...BINARY_ACIDS, ...buildOxyacidPool()];
+
+
+// ---------- Binary covalent nomenclature pool ----------
+// Prefixes run from mono- through deca-.  The first element never uses mono-
+// when its subscript is 1; the second element always uses a numerical prefix
+// and is converted to an -ide name.  The quiz intentionally includes both
+// familiar molecules and chemically fanciful combinations so students must
+// apply the naming rules rather than recognize memorized compounds.
+const COVALENT_PREFIXES = ['', 'mono', 'di', 'tri', 'tetra', 'penta', 'hexa', 'hepta', 'octa', 'nona', 'deca'];
+
+const COVALENT_ELEMENTS = [
+  {sym:'B',  name:'boron',     ide:'boride'},
+  {sym:'C',  name:'carbon',    ide:'carbide'},
+  {sym:'N',  name:'nitrogen',  ide:'nitride'},
+  {sym:'O',  name:'oxygen',    ide:'oxide'},
+  {sym:'F',  name:'fluorine',  ide:'fluoride'},
+  {sym:'Si', name:'silicon',   ide:'silicide'},
+  {sym:'P',  name:'phosphorus',ide:'phosphide'},
+  {sym:'S',  name:'sulfur',    ide:'sulfide'},
+  {sym:'Cl', name:'chlorine',  ide:'chloride'},
+  {sym:'Se', name:'selenium',  ide:'selenide'},
+  {sym:'Br', name:'bromine',   ide:'bromide'},
+  {sym:'I',  name:'iodine',    ide:'iodide'},
+];
+
+// Standard contraction of a numerical prefix before "oxide".
+const OXIDE_PREFIX_NAMES = {
+  1:'monoxide', 2:'dioxide', 3:'trioxide', 4:'tetroxide', 5:'pentoxide',
+  6:'hexoxide', 7:'heptoxide', 8:'octoxide', 9:'nonoxide', 10:'decoxide'
+};
+
+function covalentFormulaPart(sym, count){
+  return sym + (count === 1 ? '' : String(count));
+}
+
+function covalentFormula(first, second, firstCount, secondCount){
+  return covalentFormulaPart(first.sym, firstCount) + covalentFormulaPart(second.sym, secondCount);
+}
+
+function secondCovalentName(element, count){
+  if(element.sym === 'O') return OXIDE_PREFIX_NAMES[count];
+  return COVALENT_PREFIXES[count] + element.ide;
+}
+
+function covalentName(first, second, firstCount, secondCount){
+  const firstPrefix = firstCount === 1 ? '' : COVALENT_PREFIXES[firstCount];
+  return `${firstPrefix}${first.name} ${secondCovalentName(second, secondCount)}`;
+}
+
+// A few familiar examples are included deliberately, while the rest of the
+// quiz can generate "fake" but rule-valid names such as heptaiodine decafluoride.
+const COVALENT_EXAMPLES = [
+  {first:'C', second:'O', firstCount:1, secondCount:1},   // carbon monoxide
+  {first:'C', second:'O', firstCount:1, secondCount:2},   // carbon dioxide
+  {first:'N', second:'O', firstCount:2, secondCount:5},   // dinitrogen pentoxide
+  {first:'N', second:'O', firstCount:2, secondCount:4},   // dinitrogen tetroxide
+  {first:'P', second:'Cl',firstCount:1, secondCount:3},   // phosphorus trichloride
+  {first:'P', second:'Cl',firstCount:1, secondCount:5},   // phosphorus pentachloride
+  {first:'S', second:'F', firstCount:1, secondCount:6},   // sulfur hexafluoride
+  {first:'I', second:'F', firstCount:7, secondCount:10},  // heptaiodine decafluoride (rule-practice example)
+];
+
+function covalentElement(sym){ return COVALENT_ELEMENTS.find(e=>e.sym===sym); }
+
+function makeCovalentQuestion(direction){
+  let first, second, firstCount, secondCount;
+
+  // Roughly one-third of covalent questions come from recognizable/fixed examples;
+  // the rest are randomized to force use of the prefixes all the way to deca-.
+  if(Math.random() < .34){
+    const ex = randomItem(COVALENT_EXAMPLES);
+    first = covalentElement(ex.first);
+    second = covalentElement(ex.second);
+    firstCount = ex.firstCount;
+    secondCount = ex.secondCount;
+  } else {
+    first = randomItem(COVALENT_ELEMENTS);
+    do { second = randomItem(COVALENT_ELEMENTS); } while(second.sym === first.sym);
+
+    // Include 1 frequently enough to practice dropping mono- on the first element,
+    // while still giving substantial practice with the larger prefixes.
+    firstCount = Math.random() < .28 ? 1 : 2 + Math.floor(Math.random()*9);
+    secondCount = 1 + Math.floor(Math.random()*10);
+  }
+
+  const formula = covalentFormula(first, second, firstCount, secondCount);
+  const name = covalentName(first, second, firstCount, secondCount);
+  return {kind:'covalent', direction, first, second, firstCount, secondCount, formula, name};
+}
 
 const byId = (arr,id)=>arr.find(x=>x.id===id);
 const subScript = s => s.replace(/(\d+)/g, '<sub>$1</sub>');
@@ -1550,6 +1648,8 @@ const quizFormulaArea = document.getElementById('quizFormulaArea');
 const quizBuildArea = document.getElementById('quizBuildArea');
 const quizNameInput = document.getElementById('quizNameInput');
 const quizFormulaInput = document.getElementById('quizFormulaInput');
+const namePeriodicReference = document.getElementById('namePeriodicReference');
+const periodicReference = document.getElementById('periodicReference');
 const quizSubToggle = document.getElementById('quizSubToggle');
 const questionKicker = document.getElementById('questionKicker');
 const questionPrompt = document.getElementById('questionPrompt');
@@ -1839,18 +1939,27 @@ function makeQuestion(){
   if(direction === 'acids'){
     kind = 'acid';
     direction = Math.random() < .5 ? 'name' : 'formula';
+  } else if(direction === 'covalent'){
+    kind = 'covalent';
+    direction = Math.random() < .5 ? 'name' : 'formula';
   } else if(direction === 'mixed'){
-    // Keep ionic compounds as the majority while regularly mixing in acids.
-    kind = Math.random() < .38 ? 'acid' : 'ionic';
-    if(kind === 'acid') direction = Math.random() < .5 ? 'name' : 'formula';
-    else direction = Math.random() < .5 ? 'name' : 'build';
+    // Ionic remains the largest category, with acids and covalent compounds
+    // appearing regularly throughout mixed practice.
+    const r = Math.random();
+    kind = r < .50 ? 'ionic' : (r < .75 ? 'acid' : 'covalent');
+    if(kind === 'ionic') direction = Math.random() < .5 ? 'name' : 'build';
+    else direction = Math.random() < .5 ? 'name' : 'formula';
   } else if(direction === 'name'){
-    // Formula -> Name can be either ionic or acid nomenclature.
-    kind = Math.random() < .4 ? 'acid' : 'ionic';
+    // Formula -> Name includes ionic compounds, acids, and covalent molecules.
+    const r = Math.random();
+    kind = r < .46 ? 'ionic' : (r < .72 ? 'acid' : 'covalent');
+    direction = 'name';
   } else if(direction === 'build'){
-    // Name -> answer: ionic compounds are built; acids are typed as formulas.
-    kind = Math.random() < .35 ? 'acid' : 'ionic';
-    direction = kind === 'acid' ? 'formula' : 'build';
+    // Name -> answer: ionic compounds are physically built; acids and covalent
+    // molecules are entered with the formula editor.
+    const r = Math.random();
+    kind = r < .50 ? 'ionic' : (r < .75 ? 'acid' : 'covalent');
+    direction = kind === 'ionic' ? 'build' : 'formula';
   }
 
   let key, guard = 0;
@@ -1864,6 +1973,9 @@ function makeQuestion(){
         name:acid.name
       };
       key = `acid:${direction}:${acid.formula}`;
+    } else if(kind === 'covalent'){
+      question = makeCovalentQuestion(direction);
+      key = `covalent:${direction}:${question.formula}`;
     } else {
       const cIon = randomItem(CATIONS);
       const aIon = randomItem(ANIONS);
@@ -1895,10 +2007,40 @@ function renderQuizQuestion(){
   quizNameArea.style.display = 'none';
   quizFormulaArea.style.display = 'none';
   quizBuildArea.style.display = 'none';
+  namePeriodicReference.style.display = 'none';
+  periodicReference.style.display = 'none';
   resetWorkspaceOnly();
 
-  const isTextQuestion = quizQuestion.kind === 'acid' || quizQuestion.direction === 'name';
+  const isTextQuestion = quizQuestion.kind !== 'ionic' || quizQuestion.direction === 'name';
   document.body.classList.toggle('quiz-name-question', isTextQuestion);
+
+  if(quizQuestion.kind === 'covalent'){
+    quizBuildArea.style.display = 'none';
+
+    if(quizQuestion.direction === 'name'){
+      quizNameArea.style.display = '';
+      quizFormulaArea.style.display = 'none';
+      namePeriodicReference.style.display = '';
+      questionKicker.textContent = 'Binary Covalent · Formula → Name';
+      questionPrompt.textContent = 'What is the correct molecular name for this formula?';
+      questionTarget.className = 'question-target';
+      questionTarget.innerHTML = subScript(quizQuestion.formula);
+      quizNameInput.placeholder = 'Type the complete covalent compound name';
+      quizHint.textContent = 'Use mono- through deca- to show atom counts. Do not use mono- on the first element when its subscript is 1. The second element always gets a prefix and changes to an -ide ending.';
+      setTimeout(()=>quizNameInput.focus(),0);
+    } else {
+      quizNameArea.style.display = 'none';
+      quizFormulaArea.style.display = '';
+      periodicReference.style.display = '';
+      questionKicker.textContent = 'Binary Covalent · Name → Formula';
+      questionPrompt.textContent = 'What is the correct formula for the covalent compound named below?';
+      questionTarget.className = 'question-target name-target';
+      questionTarget.textContent = quizQuestion.name;
+      quizHint.textContent = 'Translate each numerical prefix directly into a subscript: mono = 1, di = 2, tri = 3, tetra = 4, penta = 5, hexa = 6, hepta = 7, octa = 8, nona = 9, deca = 10.';
+      setTimeout(()=>quizFormulaInput.focus(),0);
+    }
+    return;
+  }
 
   if(quizQuestion.kind === 'acid'){
     quizBuildArea.style.display = 'none';
@@ -1906,6 +2048,7 @@ function renderQuizQuestion(){
     if(quizQuestion.direction === 'name'){
       quizNameArea.style.display = '';
       quizFormulaArea.style.display = 'none';
+      namePeriodicReference.style.display = '';
       questionKicker.textContent = quizQuestion.acid.family === 'binary' ? 'Binary Acid · Formula → Name' : 'Oxyacid · Formula → Name';
       questionPrompt.textContent = 'What is the correct acid name for this formula?';
       questionTarget.className = 'question-target';
@@ -1918,6 +2061,7 @@ function renderQuizQuestion(){
     } else {
       quizNameArea.style.display = 'none';
       quizFormulaArea.style.display = '';
+      periodicReference.style.display = '';
       questionKicker.textContent = quizQuestion.acid.family === 'binary' ? 'Binary Acid · Name → Formula' : 'Oxyacid · Name → Formula';
       questionPrompt.textContent = 'What is the correct formula for the acid named below?';
       questionTarget.className = 'question-target name-target';
@@ -1938,6 +2082,7 @@ function renderQuizQuestion(){
     quizNameArea.style.display = '';
     quizFormulaArea.style.display = 'none';
     quizBuildArea.style.display = 'none';
+    namePeriodicReference.style.display = '';
     quizNameInput.placeholder = 'Type the complete ionic compound name';
     quizHint.textContent = 'Identify the cation and anion first. Green Sheet variants may use one prefix family at a time; hydrogen/dihydrogen may also combine with an -ite form. If the metal can form more than one charge, determine the Roman numeral from the formula.';
     setTimeout(()=>quizNameInput.focus(),0);
@@ -1981,6 +2126,21 @@ function markQuizResult(ok, message){
 
 function checkQuizAnswer(){
   if(!quizQuestion) return;
+
+  if(quizQuestion.kind === 'covalent'){
+    if(quizQuestion.direction === 'name'){
+      const ok = normalize(quizNameInput.value) === normalize(quizQuestion.name);
+      markQuizResult(ok, ok
+        ? `✓ Correct! <strong>${quizQuestion.name}</strong>`
+        : `✗ Not quite. Recheck both numerical prefixes, remember that mono- is omitted only from a one-atom first element, and change the second element to its -ide name.`);
+    } else {
+      const ok = normalizeFormulaAnswer(getQuizFormulaPlainText()) === normalizeFormulaAnswer(quizQuestion.formula);
+      markQuizResult(ok, ok
+        ? `✓ Correct! <strong>${quizQuestion.name}</strong> = <span class="mono">${subScript(quizQuestion.formula)}</span>.`
+        : `✗ Not quite. Translate each prefix into the matching subscript and keep the element symbols in the order given by the name.`);
+    }
+    return;
+  }
 
   if(quizQuestion.kind === 'acid'){
     if(quizQuestion.direction === 'name'){
@@ -2034,6 +2194,13 @@ document.getElementById('quizRevealBtn').addEventListener('click', ()=>{
     updateQuizStats();
   }
   quizFeedback.className = 'quiz-feedback show info';
+
+  if(quizQuestion.kind === 'covalent'){
+    quizFeedback.innerHTML = quizQuestion.direction === 'name'
+      ? `Answer: <strong>${quizQuestion.name}</strong>`
+      : `Answer: <strong>${quizQuestion.name}</strong> = <span class="mono">${subScript(quizQuestion.formula)}</span>.`;
+    return;
+  }
 
   if(quizQuestion.kind === 'acid'){
     quizFeedback.innerHTML = quizQuestion.direction === 'name'
