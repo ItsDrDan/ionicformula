@@ -386,6 +386,16 @@
     border-radius:8px; outline:none; background:#fff; font-family:inherit;
   }
   #quizNameInput:focus{border-color:var(--green-600);}
+  .quiz-formula-editor{width:min(100%,520px); margin:0 auto; text-align:left;}
+  .quiz-formula-toolbar{justify-content:flex-start; flex-wrap:wrap;}
+  #quizFormulaInput{
+    font-family:'JetBrains Mono',monospace; font-size:1.2rem; min-height:42px;
+    border:1.5px solid var(--green-300); border-radius:8px; padding:8px 10px;
+    background:#fff; outline:none; width:100%;
+  }
+  #quizFormulaInput:focus{border-color:var(--green-600);}
+  #quizFormulaInput:empty::before{content:attr(data-placeholder); color:#8aa095; pointer-events:none;}
+  .math-editor-note{margin-top:5px; font-size:.72rem; line-height:1.35; color:#6b8a78;}
   .build-instruction{font-size:.82rem; color:#557263; line-height:1.45;}
   .quiz-actions{display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:12px;}
   .quiz-feedback{display:none; margin-top:12px; border-radius:8px; padding:9px 11px; font-size:.84rem; line-height:1.45;}
@@ -471,6 +481,19 @@
 
         <div class="quiz-answer-area" id="quizNameArea">
           <input type="text" id="quizNameInput" autocomplete="off" placeholder="Type your answer">
+        </div>
+        <div class="quiz-answer-area" id="quizFormulaArea" style="display:none;">
+          <div class="quiz-formula-editor">
+            <span class="field-label">Formula editor</span>
+            <div class="formula-toolbar quiz-formula-toolbar">
+              <button class="tbtn active" id="quizSubToggle" type="button" title="Toggle automatic subscript formatting">X<sub>2</sub> Subscript</button>
+              <button class="tbtn" id="quizParenOpen" type="button">(</button>
+              <button class="tbtn" id="quizParenClose" type="button">)</button>
+              <button class="tbtn" id="quizFormulaClear" type="button">Clear</button>
+            </div>
+            <div id="quizFormulaInput" contenteditable="true" spellcheck="false" inputmode="text" data-placeholder="Type the formula, e.g. H₂SO₄"></div>
+            <div class="math-editor-note">Subscript mode starts ON. Type numbers normally and they will be formatted as subscripts. You can also paste a plain formula such as H2SO4.</div>
+          </div>
         </div>
         <div class="quiz-answer-area" id="quizBuildArea" style="display:none;">
           <div class="build-instruction">Use the cation and anion banks below. Add the correct ions until the compound is represented in its lowest whole-number ratio.</div>
@@ -1375,8 +1398,11 @@ function renderLog(){
 const freeModeBtn = document.getElementById('freeModeBtn');
 const quizModeBtn = document.getElementById('quizModeBtn');
 const quizNameArea = document.getElementById('quizNameArea');
+const quizFormulaArea = document.getElementById('quizFormulaArea');
 const quizBuildArea = document.getElementById('quizBuildArea');
 const quizNameInput = document.getElementById('quizNameInput');
+const quizFormulaInput = document.getElementById('quizFormulaInput');
+const quizSubToggle = document.getElementById('quizSubToggle');
 const questionKicker = document.getElementById('questionKicker');
 const questionPrompt = document.getElementById('questionPrompt');
 const questionTarget = document.getElementById('questionTarget');
@@ -1384,6 +1410,154 @@ const quizFeedback = document.getElementById('quizFeedback');
 const quizHint = document.getElementById('quizHint');
 const scoreChip = document.getElementById('scoreChip');
 const streakChip = document.getElementById('streakChip');
+
+// ---------- Quiz formula math editor ----------
+// Subscript mode is on by default for formula-answer questions. Letters stay
+// on the baseline; digits typed while this mode is on are converted into
+// semantic <sub> elements so formulas display like H₂SO₄ while the checker
+// can still read the plain text as H2SO4.
+let quizSubMode = true;
+
+function setQuizSubMode(on){
+  quizSubMode = !!on;
+  quizSubToggle.classList.toggle('active', quizSubMode);
+  quizSubToggle.setAttribute('aria-pressed', String(quizSubMode));
+  quizSubToggle.title = quizSubMode
+    ? 'Automatic subscript formatting is ON'
+    : 'Automatic subscript formatting is OFF';
+}
+
+function getQuizFormulaRange(){
+  const sel = window.getSelection();
+  if(sel && sel.rangeCount > 0){
+    const r = sel.getRangeAt(0);
+    if(quizFormulaInput.contains(r.commonAncestorContainer)) return {sel, range:r};
+  }
+  const range = document.createRange();
+  range.selectNodeContents(quizFormulaInput);
+  range.collapse(false);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  return {sel, range};
+}
+
+function insertQuizNodeAtCursor(node, cursorAfterNode){
+  quizFormulaInput.focus();
+  const {sel, range} = getQuizFormulaRange();
+  range.deleteContents();
+  range.insertNode(node);
+  const after = document.createRange();
+  after.setStartAfter(cursorAfterNode || node);
+  after.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(after);
+}
+
+function wrapQuizTrailingDigits(){
+  if(!quizSubMode) return;
+  const sel = window.getSelection();
+  if(!sel || sel.rangeCount === 0) return;
+  const range = sel.getRangeAt(0);
+  if(!range.collapsed || !quizFormulaInput.contains(range.startContainer)) return;
+  const node = range.startContainer;
+  if(node.nodeType !== Node.TEXT_NODE) return;
+
+  const text = node.textContent;
+  const offset = range.startOffset;
+  let start = offset;
+  while(start > 0 && /[0-9]/.test(text[start-1])) start--;
+  if(start === offset) return;
+
+  const before = text.slice(0, start);
+  const digits = text.slice(start, offset);
+  const afterText = text.slice(offset);
+  const sub = document.createElement('sub');
+  sub.textContent = digits;
+  const zwsp = document.createTextNode('\u200B' + afterText);
+
+  const frag = document.createDocumentFragment();
+  if(before) frag.appendChild(document.createTextNode(before));
+  frag.appendChild(sub);
+  frag.appendChild(zwsp);
+  node.parentNode.replaceChild(frag, node);
+
+  const newRange = document.createRange();
+  newRange.setStart(zwsp, 1);
+  newRange.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(newRange);
+}
+
+// Paste plain formulas cleanly. When subscript mode is ON, every digit in the
+// pasted text is rendered as a subscript instead of only the final digit.
+function insertQuizFormulaText(text){
+  const subDigits = {'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};
+  text = String(text || '')
+    .replace(/[₀₁₂₃₄₅₆₇₈₉]/g, d=>subDigits[d])
+    .replace(/[\r\n\t]/g,'')
+    .replace(/\s+/g,'');
+
+  quizFormulaInput.focus();
+  const {sel, range} = getQuizFormulaRange();
+  range.deleteContents();
+  const frag = document.createDocumentFragment();
+  const parts = text.split(/(\d+)/).filter(Boolean);
+  parts.forEach(part=>{
+    if(quizSubMode && /^\d+$/.test(part)){
+      const sub = document.createElement('sub');
+      sub.textContent = part;
+      frag.appendChild(sub);
+    } else {
+      frag.appendChild(document.createTextNode(part));
+    }
+  });
+  const cursor = document.createTextNode('\u200B');
+  frag.appendChild(cursor);
+  range.insertNode(frag);
+  const after = document.createRange();
+  after.setStart(cursor, 1);
+  after.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(after);
+}
+
+function getQuizFormulaPlainText(){
+  return quizFormulaInput.textContent
+    .replace(/[\u200B\u200C\u200D\uFEFF]/g, '')
+    .replace(/\s+/g,'')
+    .trim();
+}
+
+quizSubToggle.addEventListener('click', ()=>{
+  setQuizSubMode(!quizSubMode);
+  quizFormulaInput.focus();
+});
+quizFormulaInput.addEventListener('input', e=>{
+  if(e.isComposing) return;
+  wrapQuizTrailingDigits();
+});
+quizFormulaInput.addEventListener('compositionend', wrapQuizTrailingDigits);
+quizFormulaInput.addEventListener('paste', e=>{
+  e.preventDefault();
+  insertQuizFormulaText((e.clipboardData || window.clipboardData).getData('text'));
+});
+quizFormulaInput.addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    checkQuizAnswer();
+  }
+});
+document.getElementById('quizParenOpen').addEventListener('click', ()=>{
+  insertQuizNodeAtCursor(document.createTextNode('('));
+});
+document.getElementById('quizParenClose').addEventListener('click', ()=>{
+  insertQuizNodeAtCursor(document.createTextNode(')'));
+});
+document.getElementById('quizFormulaClear').addEventListener('click', ()=>{
+  quizFormulaInput.innerHTML = '';
+  quizFormulaInput.focus();
+});
+setQuizSubMode(true);
 
 function resetWorkspaceOnly(){
   state = {cation:{id:null,count:0}, anion:{id:null,count:0}};
@@ -1479,16 +1653,22 @@ function renderQuizQuestion(){
   quizHint.className = 'quiz-hint';
   quizHint.textContent = '';
   quizNameInput.value = '';
+  quizFormulaInput.innerHTML = '';
+  setQuizSubMode(true);
+  quizNameArea.style.display = 'none';
+  quizFormulaArea.style.display = 'none';
+  quizBuildArea.style.display = 'none';
   resetWorkspaceOnly();
 
   const isTextQuestion = quizQuestion.kind === 'acid' || quizQuestion.direction === 'name';
   document.body.classList.toggle('quiz-name-question', isTextQuestion);
 
   if(quizQuestion.kind === 'acid'){
-    quizNameArea.style.display = '';
     quizBuildArea.style.display = 'none';
 
     if(quizQuestion.direction === 'name'){
+      quizNameArea.style.display = '';
+      quizFormulaArea.style.display = 'none';
       questionKicker.textContent = quizQuestion.acid.family === 'binary' ? 'Binary Acid · Formula → Name' : 'Oxyacid · Formula → Name';
       questionPrompt.textContent = 'What is the correct acid name for this formula?';
       questionTarget.className = 'question-target';
@@ -1497,17 +1677,19 @@ function renderQuizQuestion(){
       quizHint.textContent = quizQuestion.acid.family === 'binary'
         ? 'For a binary acid, use hydro- + the nonmetal root + -ic acid.'
         : 'For an oxyacid, identify the oxyanion: -ate becomes -ic acid and -ite becomes -ous acid. Keep a single per- or hypo- prefix when present.';
+      setTimeout(()=>quizNameInput.focus(),0);
     } else {
+      quizNameArea.style.display = 'none';
+      quizFormulaArea.style.display = '';
       questionKicker.textContent = quizQuestion.acid.family === 'binary' ? 'Binary Acid · Name → Formula' : 'Oxyacid · Name → Formula';
       questionPrompt.textContent = 'What is the correct formula for the acid named below?';
       questionTarget.className = 'question-target name-target';
       questionTarget.textContent = quizQuestion.name;
-      quizNameInput.placeholder = 'Type the acid formula, e.g. H2SO4';
       quizHint.textContent = quizQuestion.acid.family === 'binary'
         ? 'Use the charge of the monatomic anion to determine how many H atoms are needed.'
         : 'Convert the acid ending back to its oxyanion: -ic acid comes from -ate and -ous acid comes from -ite, then add enough H+ to neutralize the anion charge.';
+      setTimeout(()=>quizFormulaInput.focus(),0);
     }
-    setTimeout(()=>quizNameInput.focus(),0);
     return;
   }
 
@@ -1517,6 +1699,7 @@ function renderQuizQuestion(){
     questionTarget.className = 'question-target';
     questionTarget.innerHTML = subScript(quizQuestion.formula);
     quizNameArea.style.display = '';
+    quizFormulaArea.style.display = 'none';
     quizBuildArea.style.display = 'none';
     quizNameInput.placeholder = 'Type the complete ionic compound name';
     quizHint.textContent = 'Identify the cation and anion first. Green Sheet variants may use one prefix family at a time; hydrogen/dihydrogen may also combine with an -ite form. If the metal can form more than one charge, determine the Roman numeral from the formula.';
@@ -1527,6 +1710,7 @@ function renderQuizQuestion(){
     questionTarget.className = 'question-target name-target';
     questionTarget.textContent = quizQuestion.name;
     quizNameArea.style.display = 'none';
+    quizFormulaArea.style.display = 'none';
     quizBuildArea.style.display = '';
     quizHint.textContent = 'Translate the anion name first, then choose the ions and balance total positive and negative charge in the lowest whole-number ratio.';
   }
@@ -1568,7 +1752,7 @@ function checkQuizAnswer(){
         ? `✓ Correct! <strong>${quizQuestion.name}</strong>`
         : `✗ Not quite. Check whether this is a binary acid or an oxyacid and apply the matching naming rule.`);
     } else {
-      const ok = normalizeFormulaAnswer(quizNameInput.value) === normalizeFormulaAnswer(quizQuestion.formula);
+      const ok = normalizeFormulaAnswer(getQuizFormulaPlainText()) === normalizeFormulaAnswer(quizQuestion.formula);
       markQuizResult(ok, ok
         ? `✓ Correct! <span class="mono">${subScript(quizQuestion.formula)}</span> is ${quizQuestion.name}.`
         : `✗ Not quite. Recheck the parent anion and the number of H atoms required to make a neutral acid formula.`);
