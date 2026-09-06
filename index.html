@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ionic Compound Builder</title>
+<title>Ionic Compound & Acid Nomenclature Study Tool</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -413,8 +413,8 @@
 <body class="quiz-mode">
 
 <header>
-  <h1>⚗️ Ionic Compound Builder</h1>
-  <p>Start in Study / Quiz Mode to practice naming formulas and building neutral ionic compounds, or switch to Free Builder Mode to explore on your own.</p>
+  <h1>⚗️ Ionic Compound & Acid Nomenclature</h1>
+  <p>Start in Study / Quiz Mode to practice ionic-compound formulas and names plus binary-acid and oxyacid nomenclature, or switch to Free Builder Mode to explore ionic compounds on your own.</p>
   <button class="help-btn" id="helpToggle">What's Type I / Type II?</button>
 </header>
 
@@ -449,7 +449,7 @@
       <div class="quiz-top">
         <div>
           <h2>Study / Quiz Mode</h2>
-          <p>Practice formula → name and name → build using the ions and naming rules from page 1 of the Green Sheet.</p>
+          <p>Practice ionic compounds plus binary acids and oxyacids. Ionic questions alternate between formula → name and name → build; acid questions use formula → name and name → formula.</p>
         </div>
         <div class="quiz-stats">
           <span class="stat-chip" id="scoreChip">Score: 0 / 0</span>
@@ -460,7 +460,8 @@
       <div class="practice-controls" aria-label="Question type">
         <button class="practice-btn active" type="button" data-practice="mixed">Mixed Practice</button>
         <button class="practice-btn" type="button" data-practice="name">Formula → Name</button>
-        <button class="practice-btn" type="button" data-practice="build">Name → Build</button>
+        <button class="practice-btn" type="button" data-practice="build">Name → Formula / Build</button>
+        <button class="practice-btn" type="button" data-practice="acids">Acids Only</button>
       </div>
 
       <div class="question-card">
@@ -469,7 +470,7 @@
         <div class="question-target" id="questionTarget"></div>
 
         <div class="quiz-answer-area" id="quizNameArea">
-          <input type="text" id="quizNameInput" autocomplete="off" placeholder="Type the complete ionic compound name">
+          <input type="text" id="quizNameInput" autocomplete="off" placeholder="Type your answer">
         </div>
         <div class="quiz-answer-area" id="quizBuildArea" style="display:none;">
           <div class="build-instruction">Use the cation and anion banks below. Add the correct ions until the compound is represented in its lowest whole-number ratio.</div>
@@ -560,7 +561,7 @@
   </div>
 </main>
 
-<footer>Ionic Compound Builder · Study / Quiz + Free Builder Mode · intro chemistry digital toolkit</footer>
+<footer>Ionic Compound & Acid Nomenclature · Study / Quiz + Free Builder Mode · intro chemistry digital toolkit</footer>
 
 <script>
 (function(){
@@ -671,16 +672,44 @@ function addHydrogenVariants(form){
 
 function buildGreenSheetOxyanions(){
   const ions = [];
+  const halogenAteNames = new Set(['chlorate','bromate','iodate']);
+
   BASE_OXYANIONS.forEach(base=>{
+    const ate = {
+      id:`green:${base.name}`, sym:base.sym, charge:base.charge,
+      name:base.name, poly:true, greenSheet:true
+    };
     const iteName = base.name.replace(/ate$/, 'ite');
-    const forms = [
-      {id:`green:${base.name}`,          sym:base.sym,                    charge:base.charge, name:base.name,           poly:true, greenSheet:true},
-      {id:`green:per${base.name}`,       sym:changeOxygenCount(base.sym,1), charge:base.charge, name:'per'+base.name,    poly:true, greenSheet:true, derived:true},
-      {id:`green:${iteName}`,            sym:changeOxygenCount(base.sym,-1),charge:base.charge, name:iteName,            poly:true, greenSheet:true, derived:true},
-      {id:`green:hypo${iteName}`,        sym:changeOxygenCount(base.sym,-2),charge:base.charge, name:'hypo'+iteName,     poly:true, greenSheet:true, derived:true},
-      {id:`green:thio${base.name}`,      sym:thioFormula(base.sym),         charge:base.charge, name:'thio'+base.name,   poly:true, greenSheet:true, derived:true},
-    ];
-    forms.forEach(form=>ions.push(...addHydrogenVariants(form)));
+    const ite = {
+      id:`green:${iteName}`, sym:changeOxygenCount(base.sym,-1), charge:base.charge,
+      name:iteName, poly:true, greenSheet:true, derived:true
+    };
+
+    // Hydrogen/dihydrogen may combine with the normal -ate or the -ite form
+    // (for example hydrogen sulfate or hydrogen sulfite), but we do not stack
+    // a second prefix on top of per-, hypo-, or thio-.
+    ions.push(...addHydrogenVariants(ate));
+    ions.push(...addHydrogenVariants(ite));
+
+    // per-/hypo- families are kept to the familiar halogen oxyanion series.
+    if(halogenAteNames.has(base.name)){
+      ions.push({
+        id:`green:per${base.name}`, sym:changeOxygenCount(base.sym,1), charge:base.charge,
+        name:'per'+base.name, poly:true, greenSheet:true, derived:true
+      });
+      ions.push({
+        id:`green:hypo${iteName}`, sym:changeOxygenCount(base.sym,-2), charge:base.charge,
+        name:'hypo'+iteName, poly:true, greenSheet:true, derived:true
+      });
+    }
+
+    // The Green Sheet specifically gives thiosulfate as the thio- example.
+    if(base.name === 'sulfate'){
+      ions.push({
+        id:'green:thiosulfate', sym:thioFormula(base.sym), charge:base.charge,
+        name:'thiosulfate', poly:true, greenSheet:true, derived:true
+      });
+    }
   });
   return ions;
 }
@@ -690,6 +719,81 @@ const ANIONS = [
   ...buildGreenSheetOxyanions(),
   ...GREEN_SHEET_COMMON_ANIONS,
 ];
+
+// ---------- Acid nomenclature pool ----------
+// Binary acids use hydro- + anion root + -ic acid. Oxyacids follow the
+// standard -ate -> -ic acid and -ite -> -ous acid pattern.
+const BINARY_ACIDS = [
+  {formula:'HF',  name:'hydrofluoric acid',  family:'binary'},
+  {formula:'HCl', name:'hydrochloric acid', family:'binary'},
+  {formula:'HBr', name:'hydrobromic acid',  family:'binary'},
+  {formula:'HI',  name:'hydroiodic acid',   family:'binary'},
+  {formula:'H2S', name:'hydrosulfuric acid',family:'binary'},
+];
+
+const ACID_STEMS = {
+  borate:    {ic:'boric',      ous:'borous'},
+  carbonate: {ic:'carbonic',   ous:'carbonous'},
+  nitrate:   {ic:'nitric',     ous:'nitrous'},
+  silicate:  {ic:'silicic',    ous:'silicous'},
+  phosphate: {ic:'phosphoric', ous:'phosphorous'},
+  sulfate:   {ic:'sulfuric',   ous:'sulfurous'},
+  chlorate:  {ic:'chloric',    ous:'chlorous'},
+  arsenate:  {ic:'arsenic',    ous:'arsenous'},
+  selenate:  {ic:'selenic',    ous:'selenous'},
+  bromate:   {ic:'bromic',     ous:'bromous'},
+  tellurate: {ic:'telluric',   ous:'tellurous'},
+  iodate:    {ic:'iodic',      ous:'iodous'},
+};
+
+function acidFormulaFromAnion(sym, charge){
+  return (charge === 1 ? 'H' : `H${charge}`) + sym;
+}
+
+function buildOxyacidPool(){
+  const acids = [];
+  const halogenAteNames = new Set(['chlorate','bromate','iodate']);
+
+  BASE_OXYANIONS.forEach(base=>{
+    const stem = ACID_STEMS[base.name];
+    if(!stem) return;
+
+    acids.push({
+      formula:acidFormulaFromAnion(base.sym, base.charge),
+      name:`${stem.ic} acid`, family:'oxyacid'
+    });
+
+    const iteSym = changeOxygenCount(base.sym,-1);
+    acids.push({
+      formula:acidFormulaFromAnion(iteSym, base.charge),
+      name:`${stem.ous} acid`, family:'oxyacid'
+    });
+
+    // Familiar halogen per-/hypo- oxyacid families; no hydrogen-prefix stacking.
+    if(halogenAteNames.has(base.name)){
+      acids.push({
+        formula:acidFormulaFromAnion(changeOxygenCount(base.sym,1), base.charge),
+        name:`per${stem.ic} acid`, family:'oxyacid'
+      });
+      acids.push({
+        formula:acidFormulaFromAnion(changeOxygenCount(base.sym,-2), base.charge),
+        name:`hypo${stem.ous} acid`, family:'oxyacid'
+      });
+    }
+  });
+
+  // A few common Green-Sheet oxyanions that also have standard acid names.
+  acids.push(
+    {formula:'HMnO4',  name:'permanganic acid', family:'oxyacid'},
+    {formula:'H2CrO4', name:'chromic acid',     family:'oxyacid'},
+    {formula:'H2Cr2O7',name:'dichromic acid',   family:'oxyacid'},
+    {formula:'H2S2O3', name:'thiosulfuric acid',family:'oxyacid'}
+  );
+
+  return acids;
+}
+
+const ACIDS = [...BINARY_ACIDS, ...buildOxyacidPool()];
 
 const byId = (arr,id)=>arr.find(x=>x.id===id);
 const subScript = s => s.replace(/(\d+)/g, '<sub>$1</sub>');
@@ -1150,6 +1254,14 @@ function normalize(s){
     .replace(/\s+\(/g, '(');   // "chromium (III)" and "chromium(III)" should both be accepted
 }
 
+function normalizeFormulaAnswer(s){
+  const subDigits = {'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};
+  return String(s || '')
+    .replace(/[₀₁₂₃₄₅₆₇₈₉]/g, d=>subDigits[d])
+    .replace(/\s+/g,'')
+    .trim();
+}
+
 // Reads the visible text out of the formula box, ignoring the <sub> tags
 // themselves (textContent already does this) and stripping the invisible
 // zero-width-space marker characters used to keep the caret from getting
@@ -1311,27 +1423,52 @@ function randomItem(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
 function makeQuestion(){
   let direction = practiceMode;
-  if(direction === 'mixed') direction = Math.random() < .5 ? 'name' : 'build';
+  let kind = 'ionic';
 
-  let cIon, aIon, counts, key;
-  let guard = 0;
+  if(direction === 'acids'){
+    kind = 'acid';
+    direction = Math.random() < .5 ? 'name' : 'formula';
+  } else if(direction === 'mixed'){
+    // Keep ionic compounds as the majority while regularly mixing in acids.
+    kind = Math.random() < .38 ? 'acid' : 'ionic';
+    if(kind === 'acid') direction = Math.random() < .5 ? 'name' : 'formula';
+    else direction = Math.random() < .5 ? 'name' : 'build';
+  } else if(direction === 'name'){
+    // Formula -> Name can be either ionic or acid nomenclature.
+    kind = Math.random() < .4 ? 'acid' : 'ionic';
+  } else if(direction === 'build'){
+    // Name -> answer: ionic compounds are built; acids are typed as formulas.
+    kind = Math.random() < .35 ? 'acid' : 'ionic';
+    direction = kind === 'acid' ? 'formula' : 'build';
+  }
+
+  let key, guard = 0;
+  let question;
   do {
-    cIon = randomItem(CATIONS);
-    aIon = randomItem(ANIONS);
-    counts = correctCounts(cIon,aIon);
-    key = `${direction}:${cIon.id}:${aIon.id}`;
+    if(kind === 'acid'){
+      const acid = randomItem(ACIDS);
+      question = {
+        kind:'acid', direction, acid,
+        formula:acid.formula,
+        name:acid.name
+      };
+      key = `acid:${direction}:${acid.formula}`;
+    } else {
+      const cIon = randomItem(CATIONS);
+      const aIon = randomItem(ANIONS);
+      const counts = correctCounts(cIon,aIon);
+      question = {
+        kind:'ionic', direction, cIon, aIon, counts,
+        formula:correctFormulaPlain(cIon,aIon,counts),
+        name:correctName(cIon,aIon)
+      };
+      key = `ionic:${direction}:${cIon.id}:${aIon.id}`;
+    }
     guard++;
   } while(key === previousQuestionKey && guard < 30);
 
   previousQuestionKey = key;
-  return {
-    direction,
-    cIon,
-    aIon,
-    counts,
-    formula: correctFormulaPlain(cIon,aIon,counts),
-    name: correctName(cIon,aIon)
-  };
+  return question;
 }
 
 function renderQuizQuestion(){
@@ -1344,25 +1481,54 @@ function renderQuizQuestion(){
   quizNameInput.value = '';
   resetWorkspaceOnly();
 
+  const isTextQuestion = quizQuestion.kind === 'acid' || quizQuestion.direction === 'name';
+  document.body.classList.toggle('quiz-name-question', isTextQuestion);
+
+  if(quizQuestion.kind === 'acid'){
+    quizNameArea.style.display = '';
+    quizBuildArea.style.display = 'none';
+
+    if(quizQuestion.direction === 'name'){
+      questionKicker.textContent = quizQuestion.acid.family === 'binary' ? 'Binary Acid · Formula → Name' : 'Oxyacid · Formula → Name';
+      questionPrompt.textContent = 'What is the correct acid name for this formula?';
+      questionTarget.className = 'question-target';
+      questionTarget.innerHTML = subScript(quizQuestion.formula);
+      quizNameInput.placeholder = 'Type the complete acid name';
+      quizHint.textContent = quizQuestion.acid.family === 'binary'
+        ? 'For a binary acid, use hydro- + the nonmetal root + -ic acid.'
+        : 'For an oxyacid, identify the oxyanion: -ate becomes -ic acid and -ite becomes -ous acid. Keep a single per- or hypo- prefix when present.';
+    } else {
+      questionKicker.textContent = quizQuestion.acid.family === 'binary' ? 'Binary Acid · Name → Formula' : 'Oxyacid · Name → Formula';
+      questionPrompt.textContent = 'What is the correct formula for the acid named below?';
+      questionTarget.className = 'question-target name-target';
+      questionTarget.textContent = quizQuestion.name;
+      quizNameInput.placeholder = 'Type the acid formula, e.g. H2SO4';
+      quizHint.textContent = quizQuestion.acid.family === 'binary'
+        ? 'Use the charge of the monatomic anion to determine how many H atoms are needed.'
+        : 'Convert the acid ending back to its oxyanion: -ic acid comes from -ate and -ous acid comes from -ite, then add enough H+ to neutralize the anion charge.';
+    }
+    setTimeout(()=>quizNameInput.focus(),0);
+    return;
+  }
+
   if(quizQuestion.direction === 'name'){
-    document.body.classList.add('quiz-name-question');
-    questionKicker.textContent = 'Formula → Name';
+    questionKicker.textContent = 'Ionic Compound · Formula → Name';
     questionPrompt.textContent = 'What is the correct name for this ionic compound?';
     questionTarget.className = 'question-target';
     questionTarget.innerHTML = subScript(quizQuestion.formula);
     quizNameArea.style.display = '';
     quizBuildArea.style.display = 'none';
-    quizHint.textContent = 'Identify the cation and anion first. Watch for Green Sheet prefixes/suffixes such as per-, -ite, hypo-, thio-, hydrogen-, and dihydrogen-. If the metal can form more than one charge, determine the Roman numeral from the formula.';
+    quizNameInput.placeholder = 'Type the complete ionic compound name';
+    quizHint.textContent = 'Identify the cation and anion first. Green Sheet variants may use one prefix family at a time; hydrogen/dihydrogen may also combine with an -ite form. If the metal can form more than one charge, determine the Roman numeral from the formula.';
     setTimeout(()=>quizNameInput.focus(),0);
   } else {
-    document.body.classList.remove('quiz-name-question');
-    questionKicker.textContent = 'Name → Build';
+    questionKicker.textContent = 'Ionic Compound · Name → Build';
     questionPrompt.textContent = 'Build the neutral ionic compound named below.';
     questionTarget.className = 'question-target name-target';
     questionTarget.textContent = quizQuestion.name;
     quizNameArea.style.display = 'none';
     quizBuildArea.style.display = '';
-    quizHint.textContent = 'Translate the anion name using the Green Sheet rules first, then choose the ions and balance total positive and negative charge in the lowest whole-number ratio.';
+    quizHint.textContent = 'Translate the anion name first, then choose the ions and balance total positive and negative charge in the lowest whole-number ratio.';
   }
 }
 
@@ -1394,6 +1560,21 @@ function markQuizResult(ok, message){
 
 function checkQuizAnswer(){
   if(!quizQuestion) return;
+
+  if(quizQuestion.kind === 'acid'){
+    if(quizQuestion.direction === 'name'){
+      const ok = normalize(quizNameInput.value) === normalize(quizQuestion.name);
+      markQuizResult(ok, ok
+        ? `✓ Correct! <strong>${quizQuestion.name}</strong>`
+        : `✗ Not quite. Check whether this is a binary acid or an oxyacid and apply the matching naming rule.`);
+    } else {
+      const ok = normalizeFormulaAnswer(quizNameInput.value) === normalizeFormulaAnswer(quizQuestion.formula);
+      markQuizResult(ok, ok
+        ? `✓ Correct! <span class="mono">${subScript(quizQuestion.formula)}</span> is ${quizQuestion.name}.`
+        : `✗ Not quite. Recheck the parent anion and the number of H atoms required to make a neutral acid formula.`);
+    }
+    return;
+  }
 
   if(quizQuestion.direction === 'name'){
     const ok = nameMatchesCorrect(quizNameInput.value, quizQuestion.cIon, quizQuestion.aIon);
@@ -1432,6 +1613,14 @@ document.getElementById('quizRevealBtn').addEventListener('click', ()=>{
     updateQuizStats();
   }
   quizFeedback.className = 'quiz-feedback show info';
+
+  if(quizQuestion.kind === 'acid'){
+    quizFeedback.innerHTML = quizQuestion.direction === 'name'
+      ? `Answer: <strong>${quizQuestion.name}</strong>`
+      : `Answer: <strong>${quizQuestion.name}</strong> = <span class="mono">${subScript(quizQuestion.formula)}</span>.`;
+    return;
+  }
+
   quizFeedback.innerHTML = quizQuestion.direction === 'name'
     ? `Answer: <strong>${quizQuestion.name}</strong>`
     : `Answer: <strong>${quizQuestion.name}</strong> = <span class="mono">${subScript(quizQuestion.formula)}</span>. Use ${quizQuestion.counts.cCount} <span class="mono">${subScript(quizQuestion.cIon.sym)}</span> ion${quizQuestion.counts.cCount===1?'':'s'} and ${quizQuestion.counts.aCount} <span class="mono">${subScript(quizQuestion.aIon.sym)}</span> ion${quizQuestion.counts.aCount===1?'':'s'}.`;
