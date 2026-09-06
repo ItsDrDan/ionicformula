@@ -1,0 +1,18 @@
+{
+  "title": "Ionic Compound Builder and Study Quiz",
+  "author": "Dr. Dan",
+  "course": "CHEM 3A",
+  "description": "Interactive ionic compound study tool with a default Study/Quiz Mode for practicing ionic compound names, formulas, ion charges, Type I and Type II compounds, polyatomic ions, and oxyanion naming patterns. Also includes a Free Builder Mode for constructing and balancing ionic compounds.",
+  "tags": [
+    "ionic compounds",
+    "nomenclature",
+    "polyatomic ions",
+    "oxyanions",
+    "chemical formulas",
+    "Type I",
+    "Type II",
+    "chemistry",
+    "CHEM 3A"
+  ],
+  "status": "working"
+}
