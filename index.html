@@ -8,28 +8,38 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#173226;
-    --page-bg:#eef6f0;
-    --paper:#ffffff;
-    --grid-line:rgba(47,107,71,.11);
-    --green-900:#1f4d36;
-    --green-800:#245a3f;
-    --green-700:#2f6b47;
-    --green-600:#3c7d54;
-    --green-500:#4f9268;
-    --green-300:#a9d9bd;
-    --green-200:#c9e9d6;
-    --green-100:#e3f5ea;
-    --cation:#b6791e;
-    --cation-bg:#fbeed9;
-    --cation-bg-strong:#f3d9a6;
-    --anion:#1f6f66;
-    --anion-bg:#dcf1ee;
-    --anion-bg-strong:#b7e0da;
-    --danger:#b03a2e;
-    --shadow:0 2px 6px rgba(23,50,38,.12);
-    --shadow-lg:0 10px 28px rgba(23,50,38,.18);
-    --radius:10px;
+    --ink:#58445f;
+    --page-bg:#fff7fb;
+    --paper:#fffefe;
+    --grid-line:rgba(164,129,191,.12);
+    --green-900:#6d4f7b;
+    --green-800:#7f6290;
+    --green-700:#9474aa;
+    --green-600:#a788bb;
+    --green-500:#bea2cf;
+    --green-300:#dbc8e8;
+    --green-200:#eadff2;
+    --green-100:#f7f0fb;
+    --cation:#d97896;
+    --cation-bg:#fff0f5;
+    --cation-bg-strong:#f7c9d8;
+    --anion:#5796aa;
+    --anion-bg:#eef9fb;
+    --anion-bg-strong:#c5e8ef;
+    --danger:#c65b73;
+    --pink:#f3b7cd;
+    --pink-soft:#fff0f6;
+    --lavender:#cdb9ea;
+    --lavender-soft:#f5effc;
+    --blue:#a9d9ea;
+    --blue-soft:#eef9fd;
+    --mint:#bfe5d3;
+    --mint-soft:#effaf5;
+    --yellow:#f6dfa7;
+    --yellow-soft:#fff9e9;
+    --shadow:0 3px 10px rgba(91,65,103,.11);
+    --shadow-lg:0 12px 30px rgba(91,65,103,.17);
+    --radius:16px;
     font-family:'Nunito Sans',system-ui,sans-serif;
   }
   *{box-sizing:border-box;}
@@ -412,6 +422,110 @@
   body.quiz-name-question .balance-bar{display:none;}
   body.quiz-name-question .workspace-col{width:min(100%,800px); margin:0 auto;}
 
+  /* ---------- Kawaii pastel refresh ---------- */
+  body{
+    background:
+      radial-gradient(circle at 9% 10%, rgba(243,183,205,.22) 0 90px, transparent 91px),
+      radial-gradient(circle at 91% 18%, rgba(169,217,234,.22) 0 105px, transparent 106px),
+      radial-gradient(circle at 80% 78%, rgba(205,185,234,.18) 0 120px, transparent 121px),
+      var(--page-bg);
+    background-attachment:fixed;
+  }
+  header{
+    background:linear-gradient(120deg,#e8a8c1 0%,#c6afe7 48%,#9fd5e6 100%);
+    color:#fff;
+    border-radius:0 0 24px 24px;
+    overflow:hidden;
+  }
+  header::after{
+    content:'✦  ♡  ☆'; position:absolute; right:24px; bottom:7px;
+    font-size:1.05rem; letter-spacing:7px; opacity:.42; pointer-events:none;
+  }
+  header p{color:rgba(255,255,255,.92);}
+  .help-btn{background:rgba(255,255,255,.2); color:#fff; border-color:rgba(255,255,255,.5);}
+  .help-panel{background:linear-gradient(90deg,var(--pink-soft),var(--lavender-soft),var(--blue-soft));}
+  .mode-switcher,.quiz-panel,.bank,.workspace,.balance-bar,.builder,.log-wrap{
+    border-color:#eadcf1; box-shadow:var(--shadow);
+  }
+  .mode-switcher{border-radius:18px; background:rgba(255,255,255,.88);}
+  .mode-btn{border-radius:13px;}
+  .mode-btn.active,.practice-btn.active,button.btn.primary{
+    background:linear-gradient(135deg,#d988aa,#9e82c5);
+    border-color:#b594ce; color:#fff; box-shadow:0 4px 10px rgba(157,118,181,.18);
+  }
+  .mode-btn:hover,.practice-btn:hover,button.btn:hover{background:var(--lavender-soft);}
+  .question-card{
+    position:relative; overflow:hidden; border-color:#ead9f1; border-radius:18px;
+    background:linear-gradient(145deg,#fffdfd 0%,#fff3f8 42%,#f4f0fc 72%,#eef9fd 100%);
+  }
+  .question-card::before,.question-card::after{
+    position:absolute; pointer-events:none; opacity:.2; color:#b783be; font-size:1.1rem;
+  }
+  .question-card::before{content:'♡ ✦'; left:12px; top:10px;}
+  .question-card::after{content:'☆ ♡'; right:12px; bottom:10px;}
+  .stat-chip:nth-child(1){background:var(--pink-soft); border-color:#f3cddd; color:#a95f7d;}
+  .stat-chip:nth-child(2){background:var(--blue-soft); border-color:#cce7f1; color:#4f8194;}
+  .practice-btn{background:#fffafd; border-color:#dfcaeb; border-radius:12px;}
+  #quizNameInput,#quizFormulaInput,#formulaInput,#nameInput{
+    border-color:#dec9ea; background:rgba(255,255,255,.94); border-radius:12px;
+  }
+  #quizNameInput:focus,#quizFormulaInput:focus,#formulaInput:focus,#nameInput:focus{
+    border-color:#b58ac8; box-shadow:0 0 0 3px rgba(205,185,234,.25);
+  }
+  .tbtn{border-color:#dec8ea; background:var(--lavender-soft); color:#76568a; border-radius:9px;}
+  .tbtn.active{background:linear-gradient(135deg,#d98cae,#a58ac8); border-color:#b58fc9;}
+  .bank.cations .ion-card{background:linear-gradient(145deg,#fff8fb,var(--cation-bg));}
+  .bank.anions .ion-card{background:linear-gradient(145deg,#f8fdff,var(--anion-bg));}
+  .ion-card{border-radius:13px;}
+  .workspace{background-color:#fffdfd;}
+  .piece.cation{background:linear-gradient(160deg,#f6c7d8,#fff0f5);}
+  .piece.anion{background:linear-gradient(160deg,#c4e8ef,#eef9fb);}
+  .quiz-feedback.ok{background:var(--mint-soft); color:#47765f;}
+  .quiz-feedback.bad{background:#fff0f3; color:#a24d65;}
+  .quiz-feedback.info{background:var(--blue-soft); color:#4d7482;}
+
+  /* ---------- Periodic-table formula reference ---------- */
+  .periodic-reference{
+    margin-top:14px; border:1px solid #e5d4ef; border-radius:16px; padding:10px 12px;
+    background:linear-gradient(145deg,rgba(255,255,255,.95),var(--lavender-soft));
+    box-shadow:0 3px 10px rgba(111,78,127,.08);
+  }
+  .periodic-reference summary{
+    cursor:pointer; list-style:none; font-weight:800; font-size:.8rem; color:var(--green-900);
+    display:flex; align-items:center; justify-content:space-between; gap:8px; user-select:none;
+  }
+  .periodic-reference summary::-webkit-details-marker{display:none;}
+  .periodic-reference summary::after{content:'⌄'; font-size:1rem; transition:transform .15s ease;}
+  .periodic-reference:not([open]) summary::after{transform:rotate(-90deg);}
+  .periodic-note{font-size:.7rem; color:#806f87; margin:5px 0 8px; line-height:1.35;}
+  .periodic-table-wrap{overflow-x:auto; padding:3px 1px 5px;}
+  .periodic-table{display:grid; grid-template-columns:repeat(18,minmax(34px,1fr)); gap:3px; min-width:720px;}
+  .pt-cell{
+    position:relative; min-height:42px; border:1px solid rgba(116,86,132,.13); border-radius:7px;
+    background:#fff; padding:3px 2px 2px; text-align:center; cursor:pointer; color:#5e4965;
+    font-family:'Nunito Sans',system-ui,sans-serif; transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .pt-cell:hover{transform:translateY(-2px); box-shadow:0 4px 8px rgba(91,65,103,.14); z-index:2;}
+  .pt-num{display:block; font-size:.48rem; line-height:1; opacity:.62; text-align:left;}
+  .pt-symbol{display:block; font-family:'JetBrains Mono',monospace; font-weight:800; font-size:.87rem; line-height:1.15;}
+  .pt-name{display:block; font-size:.43rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; opacity:.72;}
+  .pt-nonmetal{background:#fff1f6;}
+  .pt-alkali,.pt-alkaline{background:#fff8e8;}
+  .pt-transition{background:#f6effc;}
+  .pt-post,.pt-metalloid{background:#effaf5;}
+  .pt-halogen{background:#eef9fd;}
+  .pt-noble{background:#f1f0ff;}
+  .pt-lanthanide{background:#fff3ed;}
+  .pt-actinide{background:#fceef7;}
+  .pt-series-label{
+    grid-column:1 / span 3; display:flex; align-items:center; justify-content:flex-end;
+    padding-right:6px; font-size:.54rem; color:#806f87; font-weight:800;
+  }
+  .pt-series{display:grid; grid-template-columns:repeat(18,minmax(34px,1fr)); gap:3px; min-width:720px; margin-top:5px;}
+  .pt-legend{display:flex; flex-wrap:wrap; gap:5px 10px; margin-top:7px; font-size:.56rem; color:#78647e;}
+  .pt-key{display:inline-flex; align-items:center; gap:4px;}
+  .pt-swatch{width:9px;height:9px;border-radius:3px;border:1px solid rgba(80,60,90,.12);}
+
   @media (max-width:600px){
     .mode-switcher{grid-template-columns:1fr;}
     .question-target{font-size:1.3rem;}
@@ -493,6 +607,22 @@
             </div>
             <div id="quizFormulaInput" contenteditable="true" spellcheck="false" inputmode="text" data-placeholder="Type the formula, e.g. H₂SO₄"></div>
             <div class="math-editor-note">Subscript mode starts ON. Type numbers normally and they will be formatted as subscripts. You can also paste a plain formula such as H2SO4.</div>
+            <details class="periodic-reference" id="periodicReference" open>
+              <summary>✨ Periodic Table Reference</summary>
+              <div class="periodic-note">Use this as a symbol reference. You can also click an element to insert its symbol into the formula editor.</div>
+              <div class="periodic-table-wrap">
+                <div class="periodic-table" id="periodicTable"></div>
+                <div class="pt-series" id="periodicSeries"></div>
+              </div>
+              <div class="pt-legend">
+                <span class="pt-key"><span class="pt-swatch pt-nonmetal"></span>nonmetal</span>
+                <span class="pt-key"><span class="pt-swatch pt-alkali"></span>alkali/alkaline earth</span>
+                <span class="pt-key"><span class="pt-swatch pt-transition"></span>transition metal</span>
+                <span class="pt-key"><span class="pt-swatch pt-metalloid"></span>post-transition/metalloid</span>
+                <span class="pt-key"><span class="pt-swatch pt-halogen"></span>halogen</span>
+                <span class="pt-key"><span class="pt-swatch pt-noble"></span>noble gas</span>
+              </div>
+            </details>
           </div>
         </div>
         <div class="quiz-answer-area" id="quizBuildArea" style="display:none;">
@@ -1558,6 +1688,79 @@ document.getElementById('quizFormulaClear').addEventListener('click', ()=>{
   quizFormulaInput.focus();
 });
 setQuizSubMode(true);
+
+// ---------- Clickable periodic-table reference ----------
+// The main grid follows the standard 18-column layout. Lanthanides and
+// actinides are shown in two separate rows underneath to keep the table compact.
+const PERIODIC_MAIN = [
+  [
+    [1,'H','Hydrogen','nonmetal'],null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[2,'He','Helium','noble']
+  ],
+  [
+    [3,'Li','Lithium','alkali'],[4,'Be','Beryllium','alkaline'],null,null,null,null,null,null,null,null,null,null,[5,'B','Boron','metalloid'],[6,'C','Carbon','nonmetal'],[7,'N','Nitrogen','nonmetal'],[8,'O','Oxygen','nonmetal'],[9,'F','Fluorine','halogen'],[10,'Ne','Neon','noble']
+  ],
+  [
+    [11,'Na','Sodium','alkali'],[12,'Mg','Magnesium','alkaline'],null,null,null,null,null,null,null,null,null,null,[13,'Al','Aluminum','post'],[14,'Si','Silicon','metalloid'],[15,'P','Phosphorus','nonmetal'],[16,'S','Sulfur','nonmetal'],[17,'Cl','Chlorine','halogen'],[18,'Ar','Argon','noble']
+  ],
+  [
+    [19,'K','Potassium','alkali'],[20,'Ca','Calcium','alkaline'],[21,'Sc','Scandium','transition'],[22,'Ti','Titanium','transition'],[23,'V','Vanadium','transition'],[24,'Cr','Chromium','transition'],[25,'Mn','Manganese','transition'],[26,'Fe','Iron','transition'],[27,'Co','Cobalt','transition'],[28,'Ni','Nickel','transition'],[29,'Cu','Copper','transition'],[30,'Zn','Zinc','transition'],[31,'Ga','Gallium','post'],[32,'Ge','Germanium','metalloid'],[33,'As','Arsenic','metalloid'],[34,'Se','Selenium','nonmetal'],[35,'Br','Bromine','halogen'],[36,'Kr','Krypton','noble']
+  ],
+  [
+    [37,'Rb','Rubidium','alkali'],[38,'Sr','Strontium','alkaline'],[39,'Y','Yttrium','transition'],[40,'Zr','Zirconium','transition'],[41,'Nb','Niobium','transition'],[42,'Mo','Molybdenum','transition'],[43,'Tc','Technetium','transition'],[44,'Ru','Ruthenium','transition'],[45,'Rh','Rhodium','transition'],[46,'Pd','Palladium','transition'],[47,'Ag','Silver','transition'],[48,'Cd','Cadmium','transition'],[49,'In','Indium','post'],[50,'Sn','Tin','post'],[51,'Sb','Antimony','metalloid'],[52,'Te','Tellurium','metalloid'],[53,'I','Iodine','halogen'],[54,'Xe','Xenon','noble']
+  ],
+  [
+    [55,'Cs','Cesium','alkali'],[56,'Ba','Barium','alkaline'],['57–71','Ln','Lanthanides','lanthanide'],[72,'Hf','Hafnium','transition'],[73,'Ta','Tantalum','transition'],[74,'W','Tungsten','transition'],[75,'Re','Rhenium','transition'],[76,'Os','Osmium','transition'],[77,'Ir','Iridium','transition'],[78,'Pt','Platinum','transition'],[79,'Au','Gold','transition'],[80,'Hg','Mercury','transition'],[81,'Tl','Thallium','post'],[82,'Pb','Lead','post'],[83,'Bi','Bismuth','post'],[84,'Po','Polonium','post'],[85,'At','Astatine','halogen'],[86,'Rn','Radon','noble']
+  ],
+  [
+    [87,'Fr','Francium','alkali'],[88,'Ra','Radium','alkaline'],['89–103','An','Actinides','actinide'],[104,'Rf','Rutherfordium','transition'],[105,'Db','Dubnium','transition'],[106,'Sg','Seaborgium','transition'],[107,'Bh','Bohrium','transition'],[108,'Hs','Hassium','transition'],[109,'Mt','Meitnerium','transition'],[110,'Ds','Darmstadtium','transition'],[111,'Rg','Roentgenium','transition'],[112,'Cn','Copernicium','transition'],[113,'Nh','Nihonium','post'],[114,'Fl','Flerovium','post'],[115,'Mc','Moscovium','post'],[116,'Lv','Livermorium','post'],[117,'Ts','Tennessine','halogen'],[118,'Og','Oganesson','noble']
+  ]
+];
+
+const LANTHANIDES = [
+  [57,'La','Lanthanum'],[58,'Ce','Cerium'],[59,'Pr','Praseodymium'],[60,'Nd','Neodymium'],[61,'Pm','Promethium'],[62,'Sm','Samarium'],[63,'Eu','Europium'],[64,'Gd','Gadolinium'],[65,'Tb','Terbium'],[66,'Dy','Dysprosium'],[67,'Ho','Holmium'],[68,'Er','Erbium'],[69,'Tm','Thulium'],[70,'Yb','Ytterbium'],[71,'Lu','Lutetium']
+];
+const ACTINIDES = [
+  [89,'Ac','Actinium'],[90,'Th','Thorium'],[91,'Pa','Protactinium'],[92,'U','Uranium'],[93,'Np','Neptunium'],[94,'Pu','Plutonium'],[95,'Am','Americium'],[96,'Cm','Curium'],[97,'Bk','Berkelium'],[98,'Cf','Californium'],[99,'Es','Einsteinium'],[100,'Fm','Fermium'],[101,'Md','Mendelevium'],[102,'No','Nobelium'],[103,'Lr','Lawrencium']
+];
+
+function makePeriodicCell(data, categoryOverride){
+  if(!data) return document.createElement('span');
+  const [num,symbol,name,category] = data;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = `pt-cell pt-${categoryOverride || category || 'transition'}`;
+  btn.title = `${name} (${symbol}) — click to insert ${symbol}`;
+  btn.setAttribute('aria-label', `${name}, symbol ${symbol}`);
+  btn.innerHTML = `<span class="pt-num">${num}</span><span class="pt-symbol">${symbol}</span><span class="pt-name">${name}</span>`;
+  // Range placeholders (Ln/An) are labels, not literal chemical symbols.
+  if(String(num).includes('–')){
+    btn.disabled = true;
+    btn.style.cursor = 'default';
+  } else {
+    btn.addEventListener('click', ()=>insertQuizFormulaText(symbol));
+  }
+  return btn;
+}
+
+function buildPeriodicReference(){
+  const table = document.getElementById('periodicTable');
+  const series = document.getElementById('periodicSeries');
+  if(!table || !series) return;
+  table.innerHTML = '';
+  PERIODIC_MAIN.forEach(row=>row.forEach(cell=>table.appendChild(makePeriodicCell(cell))));
+
+  series.innerHTML = '';
+  const addSeriesRow = (label, items, category)=>{
+    const lab = document.createElement('div');
+    lab.className = 'pt-series-label';
+    lab.textContent = label;
+    series.appendChild(lab);
+    items.forEach(item=>series.appendChild(makePeriodicCell([...item,category], category)));
+  };
+  addSeriesRow('Lanthanides →', LANTHANIDES, 'lanthanide');
+  addSeriesRow('Actinides →', ACTINIDES, 'actinide');
+}
+buildPeriodicReference();
 
 function resetWorkspaceOnly(){
   state = {cation:{id:null,count:0}, anion:{id:null,count:0}};
