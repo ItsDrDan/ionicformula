@@ -506,6 +506,8 @@
     font-family:'Nunito Sans',system-ui,sans-serif; transition:transform .1s ease, box-shadow .1s ease;
   }
   .pt-cell:hover{transform:translateY(-2px); box-shadow:0 4px 8px rgba(91,65,103,.14); z-index:2;}
+  .periodic-reference.reference-only .pt-cell{cursor:default;}
+  .periodic-reference.reference-only .pt-cell:hover{transform:none; box-shadow:none; z-index:auto;}
   .pt-num{display:block; font-size:.48rem; line-height:1; opacity:.62; text-align:left;}
   .pt-symbol{display:block; font-family:'JetBrains Mono',monospace; font-weight:800; font-size:.87rem; line-height:1.15;}
   .pt-name{display:block; font-size:.43rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; opacity:.72;}
@@ -595,6 +597,22 @@
 
         <div class="quiz-answer-area" id="quizNameArea">
           <input type="text" id="quizNameInput" autocomplete="off" placeholder="Type your answer">
+          <details class="periodic-reference reference-only" id="namePeriodicReference" open>
+            <summary>✨ Periodic Table Reference</summary>
+            <div class="periodic-note">Use the periodic table as a reference while identifying the elements in the formula.</div>
+            <div class="periodic-table-wrap">
+              <div class="periodic-table" id="namePeriodicTable"></div>
+              <div class="pt-series" id="namePeriodicSeries"></div>
+            </div>
+            <div class="pt-legend">
+              <span class="pt-key"><span class="pt-swatch pt-nonmetal"></span>nonmetal</span>
+              <span class="pt-key"><span class="pt-swatch pt-alkali"></span>alkali/alkaline earth</span>
+              <span class="pt-key"><span class="pt-swatch pt-transition"></span>transition metal</span>
+              <span class="pt-key"><span class="pt-swatch pt-metalloid"></span>post-transition/metalloid</span>
+              <span class="pt-key"><span class="pt-swatch pt-halogen"></span>halogen</span>
+              <span class="pt-key"><span class="pt-swatch pt-noble"></span>noble gas</span>
+            </div>
+          </details>
         </div>
         <div class="quiz-answer-area" id="quizFormulaArea" style="display:none;">
           <div class="quiz-formula-editor">
@@ -1723,31 +1741,37 @@ const ACTINIDES = [
   [89,'Ac','Actinium'],[90,'Th','Thorium'],[91,'Pa','Protactinium'],[92,'U','Uranium'],[93,'Np','Neptunium'],[94,'Pu','Plutonium'],[95,'Am','Americium'],[96,'Cm','Curium'],[97,'Bk','Berkelium'],[98,'Cf','Californium'],[99,'Es','Einsteinium'],[100,'Fm','Fermium'],[101,'Md','Mendelevium'],[102,'No','Nobelium'],[103,'Lr','Lawrencium']
 ];
 
-function makePeriodicCell(data, categoryOverride){
+function makePeriodicCell(data, categoryOverride, insertable=true){
   if(!data) return document.createElement('span');
   const [num,symbol,name,category] = data;
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = `pt-cell pt-${categoryOverride || category || 'transition'}`;
-  btn.title = `${name} (${symbol}) — click to insert ${symbol}`;
-  btn.setAttribute('aria-label', `${name}, symbol ${symbol}`);
-  btn.innerHTML = `<span class="pt-num">${num}</span><span class="pt-symbol">${symbol}</span><span class="pt-name">${name}</span>`;
-  // Range placeholders (Ln/An) are labels, not literal chemical symbols.
-  if(String(num).includes('–')){
-    btn.disabled = true;
-    btn.style.cursor = 'default';
+  const isRangeLabel = String(num).includes('–');
+  const cell = document.createElement(insertable && !isRangeLabel ? 'button' : 'div');
+
+  if(cell.tagName === 'BUTTON') cell.type = 'button';
+  cell.className = `pt-cell pt-${categoryOverride || category || 'transition'}`;
+  cell.setAttribute('aria-label', `${name}, symbol ${symbol}`);
+  cell.innerHTML = `<span class="pt-num">${num}</span><span class="pt-symbol">${symbol}</span><span class="pt-name">${name}</span>`;
+
+  // Only the table under formula-entry questions inserts symbols.
+  // Formula → Name questions use the same table purely as a reference.
+  if(insertable && !isRangeLabel){
+    cell.title = `${name} (${symbol}) — click to insert ${symbol}`;
+    cell.addEventListener('click', ()=>insertQuizFormulaText(symbol));
   } else {
-    btn.addEventListener('click', ()=>insertQuizFormulaText(symbol));
+    cell.title = `${name} (${symbol})`;
   }
-  return btn;
+  return cell;
 }
 
-function buildPeriodicReference(){
-  const table = document.getElementById('periodicTable');
-  const series = document.getElementById('periodicSeries');
+function populatePeriodicReference(tableId, seriesId, insertable){
+  const table = document.getElementById(tableId);
+  const series = document.getElementById(seriesId);
   if(!table || !series) return;
+
   table.innerHTML = '';
-  PERIODIC_MAIN.forEach(row=>row.forEach(cell=>table.appendChild(makePeriodicCell(cell))));
+  PERIODIC_MAIN.forEach(row=>
+    row.forEach(cell=>table.appendChild(makePeriodicCell(cell, undefined, insertable)))
+  );
 
   series.innerHTML = '';
   const addSeriesRow = (label, items, category)=>{
@@ -1755,10 +1779,20 @@ function buildPeriodicReference(){
     lab.className = 'pt-series-label';
     lab.textContent = label;
     series.appendChild(lab);
-    items.forEach(item=>series.appendChild(makePeriodicCell([...item,category], category)));
+    items.forEach(item=>
+      series.appendChild(makePeriodicCell([...item,category], category, insertable))
+    );
   };
   addSeriesRow('Lanthanides →', LANTHANIDES, 'lanthanide');
   addSeriesRow('Actinides →', ACTINIDES, 'actinide');
+}
+
+function buildPeriodicReference(){
+  // Formula-answer questions: clickable symbols insert into the math editor.
+  populatePeriodicReference('periodicTable', 'periodicSeries', true);
+
+  // Formula → Name questions: reference-only periodic table beneath the name box.
+  populatePeriodicReference('namePeriodicTable', 'namePeriodicSeries', false);
 }
 buildPeriodicReference();
 
