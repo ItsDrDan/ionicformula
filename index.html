@@ -580,7 +580,7 @@
       <div class="quiz-top">
         <div>
           <h2>Study / Quiz Mode</h2>
-          <p>Practice ionic compounds, binary covalent molecules, binary acids, and oxyacids. Formula → name and name → formula questions are mixed together; ionic compounds can also be built with the ion pieces.</p>
+          <p>Practice binary ionic compounds, polyatomic ionic compounds, binary covalent molecules, binary acids, and oxyacids. Formula → name and name → formula questions are mixed together; ionic compounds can also be built with the ion pieces.</p>
         </div>
         <div class="quiz-stats">
           <span class="stat-chip" id="scoreChip">Score: 0 / 0</span>
@@ -590,6 +590,8 @@
 
       <div class="practice-controls" aria-label="Question type">
         <button class="practice-btn active" type="button" data-practice="mixed">Mixed Practice</button>
+        <button class="practice-btn" type="button" data-practice="binaryionic">Binary Ionic Only</button>
+        <button class="practice-btn" type="button" data-practice="polyatomicionic">Polyatomic Ionic Only</button>
         <button class="practice-btn" type="button" data-practice="name">Formula → Name</button>
         <button class="practice-btn" type="button" data-practice="build">Name → Formula / Build</button>
         <button class="practice-btn" type="button" data-practice="acids">Acids Only</button>
@@ -1932,11 +1934,29 @@ document.querySelectorAll('.practice-btn').forEach(btn=>{
 
 function randomItem(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
+// Ionic-only practice pools:
+// Binary ionic = monatomic cation + monatomic anion.
+// Polyatomic ionic = at least one ion is polyatomic (including NH4+ and Hg2^2+).
+const BINARY_IONIC_CATIONS = CATIONS.filter(ion => !ion.poly);
+const BINARY_IONIC_ANIONS = ANIONS.filter(ion => !ion.poly);
+const POLYATOMIC_IONIC_PAIRS = [];
+CATIONS.forEach(cIon=>{
+  ANIONS.forEach(aIon=>{
+    if(cIon.poly || aIon.poly) POLYATOMIC_IONIC_PAIRS.push({cIon,aIon});
+  });
+});
+
 function makeQuestion(){
   let direction = practiceMode;
   let kind = 'ionic';
 
-  if(direction === 'acids'){
+  if(direction === 'binaryionic'){
+    kind = 'binaryionic';
+    direction = Math.random() < .5 ? 'name' : 'build';
+  } else if(direction === 'polyatomicionic'){
+    kind = 'polyatomicionic';
+    direction = Math.random() < .5 ? 'name' : 'build';
+  } else if(direction === 'acids'){
     kind = 'acid';
     direction = Math.random() < .5 ? 'name' : 'formula';
   } else if(direction === 'covalent'){
@@ -1977,15 +1997,30 @@ function makeQuestion(){
       question = makeCovalentQuestion(direction);
       key = `covalent:${direction}:${question.formula}`;
     } else {
-      const cIon = randomItem(CATIONS);
-      const aIon = randomItem(ANIONS);
+      let cIon, aIon;
+
+      if(kind === 'binaryionic'){
+        cIon = randomItem(BINARY_IONIC_CATIONS);
+        aIon = randomItem(BINARY_IONIC_ANIONS);
+      } else if(kind === 'polyatomicionic'){
+        const pair = randomItem(POLYATOMIC_IONIC_PAIRS);
+        cIon = pair.cIon;
+        aIon = pair.aIon;
+      } else {
+        cIon = randomItem(CATIONS);
+        aIon = randomItem(ANIONS);
+      }
+
       const counts = correctCounts(cIon,aIon);
       question = {
         kind:'ionic', direction, cIon, aIon, counts,
         formula:correctFormulaPlain(cIon,aIon,counts),
-        name:correctName(cIon,aIon)
+        name:correctName(cIon,aIon),
+        ionicCategory: kind === 'binaryionic'
+          ? 'binary'
+          : (kind === 'polyatomicionic' ? 'polyatomic' : null)
       };
-      key = `ionic:${direction}:${cIon.id}:${aIon.id}`;
+      key = `ionic:${kind}:${direction}:${cIon.id}:${aIon.id}`;
     }
     guard++;
   } while(key === previousQuestionKey && guard < 30);
@@ -2075,7 +2110,11 @@ function renderQuizQuestion(){
   }
 
   if(quizQuestion.direction === 'name'){
-    questionKicker.textContent = 'Ionic Compound · Formula → Name';
+    questionKicker.textContent = quizQuestion.ionicCategory === 'binary'
+      ? 'Binary Ionic · Formula → Name'
+      : (quizQuestion.ionicCategory === 'polyatomic'
+          ? 'Polyatomic Ionic · Formula → Name'
+          : 'Ionic Compound · Formula → Name');
     questionPrompt.textContent = 'What is the correct name for this ionic compound?';
     questionTarget.className = 'question-target';
     questionTarget.innerHTML = subScript(quizQuestion.formula);
@@ -2087,7 +2126,11 @@ function renderQuizQuestion(){
     quizHint.textContent = 'Identify the cation and anion first. Green Sheet variants may use one prefix family at a time; hydrogen/dihydrogen may also combine with an -ite form. If the metal can form more than one charge, determine the Roman numeral from the formula.';
     setTimeout(()=>quizNameInput.focus(),0);
   } else {
-    questionKicker.textContent = 'Ionic Compound · Name → Build';
+    questionKicker.textContent = quizQuestion.ionicCategory === 'binary'
+      ? 'Binary Ionic · Name → Build'
+      : (quizQuestion.ionicCategory === 'polyatomic'
+          ? 'Polyatomic Ionic · Name → Build'
+          : 'Ionic Compound · Name → Build');
     questionPrompt.textContent = 'Build the neutral ionic compound named below.';
     questionTarget.className = 'question-target name-target';
     questionTarget.textContent = quizQuestion.name;
