@@ -2191,7 +2191,7 @@ function updateQuizStats(){
   streakChip.textContent = `Streak: ${quizStats.streak}`;
 }
 
-function ddLog(ok){try{if(!quizQuestion||quizQuestion.ddLogged||!window.ddTrack)return;quizQuestion.ddLogged=1;const b=document.querySelector('.practice-btn[data-practice="'+practiceMode+'"]');ddTrack({game:'ionicformula',course:'3A/1A',mode:b?b.textContent.trim():'Quiz',topic:questionKicker.textContent.trim(),correct:!!ok})}catch(e){}}
+function ddLog(ok){try{if(!quizQuestion||quizQuestion.ddLogged||!window.ddTrack)return;quizQuestion.ddLogged=1;const b=document.querySelector('.practice-btn[data-practice="'+practiceMode+'"]');ddTrack({game:'ionicformula',course:'3A',mode:b?b.textContent.trim():'Quiz',topic:questionKicker.textContent.trim(),correct:!!ok})}catch(e){}}
 
 function markQuizResult(ok, message){
   if(!quizAnswered){
